@@ -16,7 +16,7 @@
             background-size: cover;
             background-position: center;
             font-family: 'Arial', sans-serif;
-            color: white;
+            color: rgb(0, 0, 0);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
         }
         canvas {
@@ -27,14 +27,14 @@
             margin: 20px 0;
         }
         button {
-            padding: 10px 20px;
+            padding: 20px 50px;
             font-size: 18px;
-            margin: 10px;
+            margin: 5px;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
+            border-radius: 20px;
             background-color: #28a745;
-            color: white;
+            color: rgb(0, 0, 0);
             transition: background-color 0.3s ease;
         }
         button:hover {
@@ -53,7 +53,7 @@
 <body>
     <button id="startButton">Comenzar Juego Nivel 1</button>
     <canvas id="gameCanvas" width="400" height="800" class="hidden"></canvas>
-    <button id="runButton" class="hidden">Correr</button>
+    <button id="runButton" class="hidden">Avanzar</button>
     <div id="gameMessage"></div>
     <button id="nextLevelButton" class="hidden">Nivel 2</button>
     <button id="nextLevelButton2" class="hidden">Nivel 3</button>
@@ -64,8 +64,6 @@
     <button id="level3Button" class="hidden">Nivel 3</button>
 
     <script>
-        // JavaScript code unchanged but with added class toggling for show/hide buttons
-
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const runButton = document.getElementById('runButton');
@@ -247,7 +245,7 @@
             hasWon = false;
             resetPlayerPosition();
             guard.attackLine.x = 0;
-            guard.speed = 5;
+            guard.speed = 10; // Aumenta la velocidad
             gameMessage.textContent = '';
             nextLevelButton.classList.add('hidden');
             nextLevelButton2.classList.add('hidden');
