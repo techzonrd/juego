@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jugaremos Muévete Luz Verde</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('ruta-a-tu-imagen-de-fondo.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+        canvas {
+            border: 2px solid black;
+            background-image: url('fo.jpg');
+            background-size: cover;
+            background-position: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #gameMessage {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">Comenzar Juego Nivel 1</button>
+    <canvas id="gameCanvas" width="400" height="800" class="hidden"></canvas>
+    <button id="runButton" class="hidden">Correr</button>
+    <div id="gameMessage"></div>
+    <button id="nextLevelButton" class="hidden">Nivel 2</button>
+    <button id="nextLevelButton2" class="hidden">Nivel 3</button>
+    <button id="restartButton" class="hidden">Jugar de Nuevo</button>
+    <button id="levelSelectButton" class="hidden">Seleccionar Nivel</button>
+    <button id="level1Button" class="hidden">Nivel 1</button>
+    <button id="level2Button" class="hidden">Nivel 2</button>
+    <button id="level3Button" class="hidden">Nivel 3</button>
+
+    <script>
+        // JavaScript code unchanged but with added class toggling for show/hide buttons
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const runButton = document.getElementById('runButton');
+        const startButton = document.getElementById('startButton');
+        const gameMessage = document.getElementById('gameMessage');
+        const nextLevelButton = document.getElementById('nextLevelButton');
+        const nextLevelButton2 = document.getElementById('nextLevelButton2');
+        const restartButton = document.getElementById('restartButton');
+        const levelSelectButton = document.getElementById('levelSelectButton');
+        const level1Button = document.getElementById('level1Button');
+        const level2Button = document.getElementById('level2Button');
+        const level3Button = document.getElementById('level3Button');
+
+        const player = {
+            x: 170,
+            y: 725,
+            width: 70,
+            height: 59,
+            image: null,
+        };
+
+        const guard = {
+            x: 170,
+            y: 100,
+            width: 85,
+            height: 50,
+            image: null,
+            linePosition: 150,
+            attackLine: { x: 0, y: 150, width: 1, height: canvas.height },
+            speed: 5,
+        };
+
+        let level = 1;
+        let isGameOver = false;
+        let isMoving = false;
+        let hasWon = false;
+
+        const playerImage = new Image();
+        playerImage.src = 'BUENO.PNG';
+        player.image = playerImage;
+
+        const guardImage = new Image();
+        guardImage.src = 'MALO.PNG';
+        guard.image = guardImage;
+
+        function drawField() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#28a745';
+            ctx.fillRect(0, guard.linePosition, canvas.width, 2);
+
+            ctx.fillStyle = 'red';
+            ctx.fillRect(guard.attackLine.x, guard.attackLine.y, guard.attackLine.width, guard.attackLine.height);
+        }
+
+        function drawPlayer() {
+            if (player.image.complete) {
+                ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
+            } else {
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+            }
+        }
+
+        function drawGuard() {
+            if (guard.image.complete) {
+                ctx.drawImage(guard.image, guard.x, guard.y, guard.width, guard.height);
+            } else {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(guard.x, guard.y, guard.width, guard.height);
+            }
+        }
+
+        function checkCollision() {
+            if (player.y <= guard.linePosition) {
+                hasWon = true;
+                gameMessage.textContent = level === 1 ? '¡Ganaste el Nivel 1!' :
+                                          level === 2 ? '¡Ganaste el Nivel 2!' :
+                                          '¡Ganaste el Nivel 3!';
+                isGameOver = true;
+                runButton.disabled = true;
+                if (level === 1) {
+                    nextLevelButton.classList.remove('hidden');
+                } else if (level === 2) {
+                    nextLevelButton2.classList.remove('hidden');
+                } else {
+                    levelSelectButton.classList.remove('hidden');
+                    nextLevelButton2.classList.add('hidden');
+                    restartButton.classList.remove('hidden');
+                    level1Button.classList.remove('hidden');
+                    level2Button.classList.remove('hidden');
+                    level3Button.classList.remove('hidden');
+                }
+                return;
+            }
+
+            if (isMoving && player.y <= guard.attackLine.y + guard.attackLine.height &&
+                player.x < guard.attackLine.x + guard.attackLine.width &&
+                player.x + player.width > guard.attackLine.x) {
+                isGameOver = true;
+                gameMessage.textContent = '¡Perdió!';
+                runButton.disabled = true;
+                restartButton.classList.remove('hidden');
+                return;
+            }
+        }
+
+        function movePlayer() {
+            if (isGameOver || hasWon) return;
+
+            const playerSpeed = level === 2 ? 10 : 10;
+            isMoving = true;
+            player.y -= playerSpeed;
+            drawGame();
+            checkCollision();
+        }
+
+        function moveAttackLine() {
+            guard.attackLine.x += guard.speed;
+
+            if (guard.attackLine.x > canvas.width) {
+                guard.attackLine.x = -guard.attackLine.width;
+            }
+        }
+
+        function drawGame() {
+            drawField();
+            drawPlayer();
+            drawGuard();
+        }
+
+        function resetPlayerPosition() {
+            player.x = 170;
+            player.y = 725;
+        }
+
+        function startGame() {
+            level = 1;
+            isGameOver = false;
+            hasWon = false;
+            resetPlayerPosition();
+            guard.attackLine.x = 0;
+            guard.speed = 5;
+            gameMessage.textContent = '';
+            nextLevelButton.classList.add('hidden');
+            nextLevelButton2.classList.add('hidden');
+            levelSelectButton.classList.add('hidden');
+            restartButton.classList.add('hidden');
+            runButton.disabled = false;
+            drawGame();
+            setInterval(() => {
+                moveAttackLine();
+                drawGame();
+            }, 100);
+        }
+
+        function startLevel2() {
+            level = 2;
+            isGameOver = false;
+            hasWon = false;
+            resetPlayerPosition();
+            guard.attackLine.x = 0;
+            guard.speed = 5;
+            gameMessage.textContent = '';
+            nextLevelButton.classList.add('hidden');
+            nextLevelButton2.classList.add('hidden');
+            levelSelectButton.classList.add('hidden');
+            restartButton.classList.add('hidden');
+            runButton.disabled = false;
+            drawGame();
+            setInterval(() => {
+                moveAttackLine();
+                drawGame();
+            }, 50);
+        }
+
+        function startLevel3() {
+            level = 3;
+            isGameOver = false;
+            hasWon = false;
+            resetPlayerPosition();
+            guard.attackLine.x = 0;
+            guard.speed = 5;
+            gameMessage.textContent = '';
+            nextLevelButton.classList.add('hidden');
+            nextLevelButton2.classList.add('hidden');
+            levelSelectButton.classList.add('hidden');
+            restartButton.classList.add('hidden');
+            runButton.disabled = false;
+            drawGame();
+            setInterval(() => {
+                moveAttackLine();
+                drawGame();
+            }, 30);
+        }
+
+        function showLevelSelection() {
+            gameMessage.textContent = 'Selecciona el Nivel';
+            startButton.classList.add('hidden');
+            nextLevelButton.classList.add('hidden');
+            nextLevelButton2.classList.add('hidden');
+            restartButton.classList.add('hidden');
+            levelSelectButton.classList.remove('hidden');
+        }
+
+        startButton.addEventListener('click', () => {
+            startButton.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            runButton.classList.remove('hidden');
+            gameMessage.textContent = '';
+            drawGame();
+
+            setInterval(() => {
+                moveAttackLine();
+                drawGame();
+            }, 100);
+        });
+
+        runButton.addEventListener('click', movePlayer);
+
+        nextLevelButton.addEventListener('click', startLevel2);
+        nextLevelButton2.addEventListener('click', startLevel3);
+        levelSelectButton.addEventListener('click', showLevelSelection);
+        restartButton.addEventListener('click', startGame);
+        level1Button.addEventListener('click', startGame);
+        level2Button.addEventListener('click', startLevel2);
+        level3Button.addEventListener('click', startLevel3);
+    </script>
+</body>
+</html>
